@@ -63,6 +63,17 @@ object ImagePuzzleUtils {
         return false
     }
 
+    fun findEmptySquarePosition(puzzle: ImagePuzzle): Position? {
+        for (i in 0 until puzzle.rows) {
+            for (j in 0 until puzzle.columns) {
+                if (puzzle.getSquare(i, j).isEmpty) {
+                    return Position(i, j)
+                }
+            }
+        }
+        return null
+    }
+
     fun findAdjacentEmptySquarePosition(puzzle: ImagePuzzle, row: Int, column: Int): Position? {
         for (i in -1..1) {
             for (j in -1..1) {

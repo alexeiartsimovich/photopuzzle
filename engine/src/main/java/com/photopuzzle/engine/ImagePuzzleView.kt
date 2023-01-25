@@ -28,6 +28,8 @@ class ImagePuzzleView @JvmOverloads constructor(
     }
     private var dragHelper: ItemTouchHelper? = null
 
+    private var shuffler: ImagePuzzleShuffler? = null
+
     init {
         val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         layoutParams.gravity = Gravity.CENTER
@@ -53,6 +55,43 @@ class ImagePuzzleView @JvmOverloads constructor(
         val dragHelper = ItemTouchHelper(dragCallback)
         dragHelper.attachToRecyclerView(recyclerView)
         this.dragHelper = dragHelper
+        this.shuffler = ImagePuzzleShuffler(
+            puzzle = adapter.puzzle,
+            swapper = object : ImagePuzzleShuffler.SquareSwapper {
+                override fun onStartSwapping() {
+                    recyclerView.itemAnimator?.apply {
+                        moveDuration = 120L
+                    }
+                }
+
+                override fun onSwapSquares(
+                    fromPosition: Position,
+                    toPosition: Position,
+                    duration: Long,
+                    onFinished: () -> Unit
+                ) {
+                    adapter.swapSquares(
+                        fromRow = fromPosition.row,
+                        fromColumn = fromPosition.column,
+                        toRow = toPosition.row,
+                        toColumn = toPosition.column
+                    )
+                    recyclerView.post {
+                        recyclerView.itemAnimator?.isRunning(onFinished)
+                            ?: onFinished.invoke()
+                    }
+                }
+
+                override fun onFinishSwapping() {
+                    recyclerView.itemAnimator?.apply {
+                        moveDuration = 250L
+                    }
+                }
+            }
+        )
+        recyclerView.post {
+            shuffler?.shuffle()
+        }
     }
 
     private fun moveSquare(row: Int, column: Int): Boolean {
