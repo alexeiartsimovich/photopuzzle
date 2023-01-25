@@ -8,7 +8,14 @@ internal class ImagePuzzleShuffler(
 ) {
     private val random: Random = Random.Default
 
+    var isShuffling: Boolean = false
+        private set
+
     fun shuffle() {
+        if (isShuffling) {
+            throw IllegalStateException("Cannot start shuffling because another shuffle is in progress")
+        }
+        isShuffling = true
         swapper.onStartSwapping()
         val steps = random.nextInt(10) + 20
         moveNextRecursively(0, steps)
@@ -16,6 +23,7 @@ internal class ImagePuzzleShuffler(
 
     private fun moveNextRecursively(step: Int, stepsLeft: Int) {
         if (stepsLeft <= 0) {
+            isShuffling = false
             swapper.onFinishSwapping()
             return
         }

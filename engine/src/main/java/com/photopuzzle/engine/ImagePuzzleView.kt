@@ -3,10 +3,7 @@ package com.photopuzzle.engine
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -91,6 +88,13 @@ class ImagePuzzleView @JvmOverloads constructor(
         recyclerView.post {
             shuffler?.shuffle()
         }
+    }
+
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        if (shuffler?.isShuffling == true) {
+            return true
+        }
+        return super.onInterceptTouchEvent(ev)
     }
 
     private fun configureAnimations() {
