@@ -60,7 +60,7 @@ class ImagePuzzleView @JvmOverloads constructor(
             swapper = object : ImagePuzzleShuffler.SquareSwapper {
                 override fun onStartSwapping() {
                     recyclerView.itemAnimator?.apply {
-                        moveDuration = 120L
+                        moveDuration = 80L
                     }
                 }
 
@@ -83,14 +83,22 @@ class ImagePuzzleView @JvmOverloads constructor(
                 }
 
                 override fun onFinishSwapping() {
-                    recyclerView.itemAnimator?.apply {
-                        moveDuration = 250L
-                    }
+                    configureAnimations()
                 }
             }
         )
+        configureAnimations()
         recyclerView.post {
             shuffler?.shuffle()
+        }
+    }
+
+    private fun configureAnimations() {
+        recyclerView.itemAnimator?.apply {
+            addDuration = 80L
+            moveDuration = 120L
+            changeDuration = 120L
+            removeDuration = 80L
         }
     }
 
