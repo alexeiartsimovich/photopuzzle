@@ -87,4 +87,17 @@ object ImagePuzzleUtils {
         }
         return null
     }
+
+    fun getSquareDimensionRatio(puzzle: ImagePuzzle): Float {
+        if (puzzle.rows <= 0 || puzzle.columns <= 0) {
+            return 1f
+        }
+        return puzzle.getSquare(0, 0).let { square ->
+            if (square.image.intrinsicWidth > 0 && square.image.intrinsicHeight > 0) {
+                square.image.intrinsicWidth.toFloat() / square.image.intrinsicHeight
+            } else {
+                1f
+            }
+        }
+    }
 }

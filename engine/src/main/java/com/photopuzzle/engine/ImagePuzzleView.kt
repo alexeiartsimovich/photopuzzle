@@ -2,11 +2,16 @@ package com.photopuzzle.engine
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-import androidx.appcompat.widget.AppCompatImageView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.setMargins
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -109,10 +114,15 @@ private class SquareAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val imageView = AppCompatImageView(parent.context)
-        imageView.setPadding(10, 10, 10, 10)
-        return ViewHolder(imageView).apply {
-            imageView.setOnClickListener {
+        val itemView = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_square, parent, false)
+        itemView.findViewById<View>(R.id.square_image).updateLayoutParams<ConstraintLayout.LayoutParams> {
+            dimensionRatio = ImagePuzzleUtils.getSquareDimensionRatio(puzzle).toString()
+            setMargins(itemView.context.dp(0.5f).toInt().coerceAtLeast(1))
+        }
+
+        return ViewHolder(itemView).apply {
+            itemView.setOnClickListener {
                 onClicked.invoke(
                     getRowForPosition(adapterPosition),
                     getColumnForPosition(adapterPosition)
@@ -141,13 +151,15 @@ private class SquareAdapter(
         return puzzle.rows * puzzle.columns
     }
 
-    class ViewHolder(private val imageView: ImageView): RecyclerView.ViewHolder(imageView) {
+    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+        private val squareImageView: ImageView = itemView.findViewById(R.id.square_image)
+
         fun bind(item: ImagePuzzle.Square) {
-            imageView.setTag(R.id.id_image_square, item)
+            itemView.setTag(R.id.id_image_square, item)
             if (item.isEmpty) {
-                imageView.setImageDrawable(null)
+                squareImageView.setImageDrawable(null)
             } else {
-                imageView.setImageDrawable(item.image)
+                squareImageView.setImageDrawable(item.image)
             }
         }
     }
@@ -188,4 +200,10 @@ private class ItemMoveCallback(
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         throw IllegalStateException("Swipes not allowed!")
     }
+}
+
+private fun Context.dp(value: Float): Float {
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        value, resources.displayMetrics)
 }
