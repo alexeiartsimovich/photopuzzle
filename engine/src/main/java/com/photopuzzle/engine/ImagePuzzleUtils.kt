@@ -7,6 +7,7 @@ import android.util.Size
 import androidx.annotation.WorkerThread
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 object ImagePuzzleUtils {
@@ -38,5 +39,52 @@ object ImagePuzzleUtils {
                 return squares[this.rows * row + column]
             }
         }
+    }
+
+    fun getPosition(puzzle: ImagePuzzle, flattenPosition: Int): Position {
+        return Position(
+            row = flattenPosition / puzzle.rows,
+            column = flattenPosition % puzzle.columns
+        )
+    }
+
+    fun areSwappable(puzzle: ImagePuzzle, position1: Position, position2: Position): Boolean {
+        if (!puzzle.getSquare(position1).isEmpty && !puzzle.getSquare(position2).isEmpty) {
+            return false
+        }
+        if ((position1.row - position2.row).absoluteValue == 1
+            && position1.column == position2.column) {
+            return true
+        }
+        if (position1.row == position2.row
+            && (position1.column - position2.column) == 1) {
+            return true
+        }
+        return false
+    }
+
+    fun findAdjacentEmptySquarePosition(puzzle: ImagePuzzle, row: Int, column: Int): Position? {
+        for (i in -1..1) {
+            for (j in -1..1) {
+                if (i.absoluteValue == j.absoluteValue) {
+                    continue
+                }
+                val otherRow = row + i
+                val otherColumn = column + j
+                getSquareOrNull(puzzle, otherRow, otherColumn)?.also { other ->
+                    if (other.isEmpty) {
+                        return Position(otherRow, otherColumn)
+                    }
+                }
+            }
+        }
+        return null
+    }
+
+    private fun getSquareOrNull(puzzle: ImagePuzzle, row: Int, column: Int): ImagePuzzle.Square? {
+        if (row in 0 until puzzle.rows && column in 0 until puzzle.columns) {
+            return puzzle.getSquare(row, column)
+        }
+        return null
     }
 }

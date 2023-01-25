@@ -8,8 +8,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.math.absoluteValue
 
 class ImagePuzzleView @JvmOverloads constructor(
     context: Context,
@@ -21,6 +21,7 @@ class ImagePuzzleView @JvmOverloads constructor(
         isNestedScrollingEnabled = false
         layoutManager = GridLayoutManagerImpl(context)
     }
+    private var dragHelper: ItemTouchHelper? = null
 
     init {
         val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
@@ -34,8 +35,8 @@ class ImagePuzzleView @JvmOverloads constructor(
             onClicked = { row, column ->
                 moveSquare(row, column)
             },
-            onDragStarted = { row, column ->
-
+            onDragStarted = { holder, row, column ->
+                dragSquare(holder, row, column)
             }
         )
 //        recyclerView.swapAdapter(adapter, false)
@@ -43,35 +44,32 @@ class ImagePuzzleView @JvmOverloads constructor(
             spanCount = imagePuzzle.columns
         }
         recyclerView.adapter = adapter
-    }
-
-    private fun getSquare(row: Int, column: Int): ImagePuzzle.Square? {
-        val adapter = recyclerView.adapter as? SquareAdapter
-            ?: return null
-        val puzzle = adapter.puzzle
-        if (row in 0 until puzzle.rows && column in 0 until puzzle.columns) {
-            return puzzle.getSquare(row, column)
-        }
-        return null
+        val dragCallback = ItemMoveCallback(imagePuzzle)
+        val dragHelper = ItemTouchHelper(dragCallback)
+        dragHelper.attachToRecyclerView(recyclerView)
+        this.dragHelper = dragHelper
     }
 
     private fun moveSquare(row: Int, column: Int): Boolean {
-        for (i in -1..1) {
-            for (j in -1..1) {
-                if (i.absoluteValue == j.absoluteValue) {
-                    continue
-                }
-                val otherRow = row + i
-                val otherColumn = column + j
-                getSquare(otherRow, otherColumn)?.also { other ->
-                    if (other.isEmpty) {
-                        swapSquaresAndNotify(row, column, otherRow, otherColumn)
-                        return true
-                    }
-                }
-            }
-        }
-        return false
+        val adapter = recyclerView.adapter as? SquareAdapter
+            ?: return false
+        val puzzle = adapter.puzzle
+        val emptySquarePosition = ImagePuzzleUtils.findAdjacentEmptySquarePosition(puzzle, row, column)
+            ?: return false
+        swapSquaresAndNotify(row, column, emptySquarePosition.row, emptySquarePosition.column)
+        return true
+    }
+
+    private fun dragSquare(holder: RecyclerView.ViewHolder, row: Int, column: Int): Boolean {
+        val adapter = recyclerView.adapter as? SquareAdapter
+            ?: return false
+        val puzzle = adapter.puzzle
+        val emptySquarePosition = ImagePuzzleUtils.findAdjacentEmptySquarePosition(puzzle, row, column)
+            ?: return false
+        val dragHelper = this.dragHelper
+            ?: return false
+        dragHelper.startDrag(holder)
+        return true
     }
 
     private fun swapSquaresAndNotify(fromRow: Int, fromColumn: Int, toRow: Int, toColumn: Int) {
@@ -84,7 +82,7 @@ class ImagePuzzleView @JvmOverloads constructor(
 private class SquareAdapter(
     puzzle: ImagePuzzle,
     private val onClicked: (row: Int, column: Int) -> Unit,
-    private val onDragStarted: (row: Int, column: Int) -> Unit
+    private val onDragStarted: (holder: RecyclerView.ViewHolder, row: Int, column: Int) -> Unit
 ) : RecyclerView.Adapter<SquareAdapter.ViewHolder>() {
     private val mutablePuzzle = MutableImagePuzzle(puzzle)
     val puzzle: ImagePuzzle get() = mutablePuzzle
@@ -120,6 +118,14 @@ private class SquareAdapter(
                     getColumnForPosition(adapterPosition)
                 )
             }
+//            imageView.setOnLongClickListener {
+//                onDragStarted.invoke(
+//                    this,
+//                    getRowForPosition(adapterPosition),
+//                    getColumnForPosition(adapterPosition)
+//                )
+//                true
+//            }
         }
     }
 
@@ -150,3 +156,36 @@ private class SquareAdapter(
 private class GridLayoutManagerImpl(
     context: Context,
 ): GridLayoutManager(context, 1, GridLayoutManager.VERTICAL, false)
+
+private class ItemMoveCallback(
+    private val puzzle: ImagePuzzle
+) : ItemTouchHelper.Callback() {
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
+        val directions = ItemTouchHelper.LEFT or
+                ItemTouchHelper.UP or
+                ItemTouchHelper.RIGHT or
+                ItemTouchHelper.DOWN
+        return ItemTouchHelper.Callback.makeFlag(ItemTouchHelper.ACTION_STATE_DRAG, directions)
+    }
+
+    override fun onMove(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        target: RecyclerView.ViewHolder
+    ): Boolean {
+        val position1 = ImagePuzzleUtils.getPosition(puzzle, viewHolder.adapterPosition)
+        val position2 = ImagePuzzleUtils.getPosition(puzzle, target.adapterPosition)
+        return ImagePuzzleUtils.areSwappable(puzzle, position1, position2)
+    }
+
+    override fun isItemViewSwipeEnabled(): Boolean {
+        return false
+    }
+
+    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+        throw IllegalStateException("Swipes not allowed!")
+    }
+}
