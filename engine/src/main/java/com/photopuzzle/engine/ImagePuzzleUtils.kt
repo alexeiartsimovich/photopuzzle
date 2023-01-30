@@ -16,14 +16,15 @@ object ImagePuzzleUtils {
         require(rows > 0)
         require(columns > 0)
         val squares = ArrayList<ImagePuzzle.Square>(rows * columns)
-        val squareWidth = (bitmap.width.toFloat() / rows).roundToInt()
-        val squareHeight = (bitmap.height.toFloat() / columns).roundToInt()
+        val squareWidth = (bitmap.width.toFloat() / rows).toInt()
+        val squareHeight = (bitmap.height.toFloat() / columns).toInt()
         for (i in 0 until rows) {
             for (j in 0 until columns) {
                 val image = Bitmap.createBitmap(bitmap, squareWidth * j, squareHeight * i,
                     squareWidth, squareHeight)
                 val isLast = i == rows - 1 && j == columns - 1
                 val square = object : ImagePuzzle.Square {
+                    override val originalPosition: Position = Position(i, j)
                     override val isEmpty: Boolean = isLast
                     override val image: Drawable = BitmapDrawable(image)
                     override val size: Size = Size(image.width, image.height)
@@ -110,5 +111,17 @@ object ImagePuzzleUtils {
                 1f
             }
         }
+    }
+
+    fun isComplete(puzzle: ImagePuzzle): Boolean {
+        for (i in 0 until puzzle.rows) {
+            for (j in 0 until puzzle.columns) {
+                val square = puzzle.getSquare(i, j)
+                if (i != square.originalPosition.row || j != square.originalPosition.column) {
+                    return false
+                }
+            }
+        }
+        return true
     }
 }

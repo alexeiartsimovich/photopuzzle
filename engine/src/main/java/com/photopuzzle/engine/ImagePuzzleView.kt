@@ -27,6 +27,9 @@ class ImagePuzzleView @JvmOverloads constructor(
 
     private var shuffler: ImagePuzzleShuffler? = null
 
+    override var onPuzzleCompletedCallback: ImagePuzzleUi.OnPuzzleCompletedCallback? = null
+    override var isUiEnabled: Boolean = false
+
     init {
         val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         layoutParams.gravity = Gravity.CENTER
@@ -85,13 +88,16 @@ class ImagePuzzleView @JvmOverloads constructor(
             }
         )
         configureAnimations()
+    }
+
+    override fun shuffleImagePuzzle() {
         recyclerView.post {
             shuffler?.shuffle()
         }
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-        if (shuffler?.isShuffling == true) {
+        if (!isUiEnabled || shuffler?.isShuffling == true) {
             return true
         }
         return super.onInterceptTouchEvent(ev)
@@ -113,6 +119,7 @@ class ImagePuzzleView @JvmOverloads constructor(
         val emptySquarePosition = ImagePuzzleUtils.findAdjacentEmptySquarePosition(puzzle, row, column)
             ?: return false
         swapSquaresAndNotify(row, column, emptySquarePosition.row, emptySquarePosition.column)
+        notifyCallbackIfPuzzleCompleted()
         return true
     }
 
@@ -132,6 +139,14 @@ class ImagePuzzleView @JvmOverloads constructor(
         val adapter = recyclerView.adapter as? SquareAdapter
             ?: return
         adapter.swapSquares(fromRow, fromColumn, toRow, toColumn)
+    }
+
+    private fun notifyCallbackIfPuzzleCompleted() {
+        val puzzle = (recyclerView.adapter as? SquareAdapter)?.puzzle
+            ?: return
+        if (ImagePuzzleUtils.isComplete(puzzle)) {
+            onPuzzleCompletedCallback?.onPuzzleCompleted()
+        }
     }
 }
 
@@ -251,10 +266,4 @@ private class ItemMoveCallback(
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         throw IllegalStateException("Swipes not allowed!")
     }
-}
-
-private fun Context.dp(value: Float): Float {
-    return TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        value, resources.displayMetrics)
 }

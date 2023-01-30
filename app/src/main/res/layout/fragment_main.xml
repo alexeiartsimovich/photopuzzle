@@ -9,10 +9,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintBottom_toTopOf="@id/start_button"
         android:id="@+id/puzzle_view"
         android:layout_width="0dp"
         android:layout_height="0dp"/>
+
+    <com.photopuzzle.app.GridSelectorView
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/start_button"
+        app:layout_constraintEnd_toStartOf="@id/start_button"
+        app:layout_constraintBottom_toBottomOf="@id/start_button"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        android:id="@+id/grid_selector_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        app:layout_constraintStart_toEndOf="@id/grid_selector_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:text="@string/start_game"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
