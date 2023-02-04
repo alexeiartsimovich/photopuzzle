@@ -51,8 +51,7 @@ class ImagePuzzleFragment : Fragment() {
     private fun loadImagePuzzle(uri: Uri, grid: Grid) {
         val context = this.context ?: return
         provider.backgroundExecutor.execute {
-            val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-            val puzzle = ImagePuzzleUtils.createImagePuzzle(bitmap, grid.rows, grid.columns)
+            val puzzle = ImagePuzzleUtils.createImagePuzzle(context, uri, grid.rows, grid.columns)
             provider.mainExecutor.execute {
                 puzzleView?.loadImagePuzzle(puzzle)
             }

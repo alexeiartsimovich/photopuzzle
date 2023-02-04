@@ -1,44 +1,69 @@
 package com.photopuzzle.engine
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.provider.MediaStore
 import android.util.Size
 import androidx.annotation.WorkerThread
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 
 object ImagePuzzleUtils {
     @WorkerThread
-    fun createImagePuzzle(bitmap: Bitmap, rows: Int, columns: Int): ImagePuzzle {
+    fun createImagePuzzle(context: Context, uri: Uri, rows: Int, columns: Int): ImagePuzzle {
         require(rows > 0)
         require(columns > 0)
-        val squares = ArrayList<ImagePuzzle.Square>(rows * columns)
-        val squareWidth = (bitmap.width.toFloat() / rows).toInt()
-        val squareHeight = (bitmap.height.toFloat() / columns).toInt()
-        for (i in 0 until rows) {
-            for (j in 0 until columns) {
-                val image = Bitmap.createBitmap(bitmap, squareWidth * j, squareHeight * i,
-                    squareWidth, squareHeight)
-                val isLast = i == rows - 1 && j == columns - 1
+        val rawBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+        val srcBitmap = cropBitmap(
+            srcBitmap = rawBitmap,
+            dimensionRatio = (columns.toFloat() / rows)
+        )
+        val squareTable = ArrayList<ArrayList<ImagePuzzle.Square>>(rows)
+        val squareWidth = (srcBitmap.width.toFloat() / columns).toInt()
+        val squareHeight = (srcBitmap.height.toFloat() / rows).toInt()
+        for (rowIndex in 0 until rows) {
+            val row = ArrayList<ImagePuzzle.Square>(columns)
+            for (columnIndex in 0 until columns) {
+                val x: Int = squareWidth * columnIndex
+                val y: Int = squareHeight * rowIndex
+                val image = Bitmap.createBitmap(srcBitmap, x, y, squareWidth, squareHeight)
+                val isLast = rowIndex == rows - 1 && columnIndex == columns - 1
                 val square = object : ImagePuzzle.Square {
-                    override val originalPosition: Position = Position(i, j)
+                    override val originalPosition: Position = Position(rowIndex, columnIndex)
                     override val isEmpty: Boolean = isLast
                     override val image: Drawable = BitmapDrawable(image)
-                    override val size: Size = Size(image.width, image.height)
+                    override val size: Size = Size(squareWidth, squareHeight)
                 }
-                squares.add(square)
+                row.add(square)
             }
+            squareTable.add(row)
         }
+        // We don't need these bitmaps anymore
+        rawBitmap.runCatching { recycle() }
+        srcBitmap.runCatching { recycle() }
         return object : ImagePuzzle {
             override val rows: Int = rows
             override val columns: Int = columns
 
             override fun getSquare(row: Int, column: Int): ImagePuzzle.Square {
-                return squares[this.rows * row + column]
+                return squareTable[row][column]
             }
+        }
+    }
+
+    @WorkerThread
+    private fun cropBitmap(srcBitmap: Bitmap, dimensionRatio: Float): Bitmap {
+        return if (srcBitmap.width / dimensionRatio >= srcBitmap.height) {
+            val targetWidth = (srcBitmap.height * dimensionRatio).toInt()
+            Bitmap.createBitmap(srcBitmap, srcBitmap.width / 2 - targetWidth / 2,
+                0, targetWidth, srcBitmap.height)
+        } else {
+            val targetHeight = (srcBitmap.width / dimensionRatio).toInt()
+            Bitmap.createBitmap(srcBitmap, 0, srcBitmap.height / 2 - targetHeight / 2,
+                srcBitmap.width, targetHeight)
         }
     }
 

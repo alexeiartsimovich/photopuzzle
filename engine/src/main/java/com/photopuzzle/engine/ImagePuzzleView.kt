@@ -173,7 +173,7 @@ private class SquareAdapter(
     }
 
     private fun getRowForPosition(position: Int): Int {
-        return position / puzzle.rows
+        return position / puzzle.columns
     }
 
     private fun getColumnForPosition(position: Int): Int {
