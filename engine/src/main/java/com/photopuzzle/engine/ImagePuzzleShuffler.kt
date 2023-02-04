@@ -18,22 +18,24 @@ internal class ImagePuzzleShuffler(
         isShuffling = true
         swapper.onStartSwapping()
         val steps = random.nextInt(10) + 20
-        moveNextRecursively(0, steps)
+        moveNextRecursively(0, steps, null)
     }
 
-    private fun moveNextRecursively(step: Int, stepsLeft: Int) {
+    private fun moveNextRecursively(step: Int, stepsLeft: Int, prevSide: Side?) {
         if (stepsLeft <= 0) {
             isShuffling = false
             swapper.onFinishSwapping()
             return
         }
-        moveStep { moveNextRecursively(step + 1, stepsLeft - 1) }
+        moveStep(prevSide) { nextSide ->
+            moveNextRecursively(step + 1, stepsLeft - 1, nextSide)
+        }
     }
 
-    private fun moveStep(onFinished: () -> Unit) {
+    private fun moveStep(prevSide: Side?, onFinished: (Side?) -> Unit) {
         val emptySquarePosition = ImagePuzzleUtils.findEmptySquarePosition(puzzle)
         if (emptySquarePosition == null) {
-            onFinished.invoke()
+            onFinished.invoke(null)
             return
         }
 
@@ -51,8 +53,13 @@ internal class ImagePuzzleShuffler(
             sides.add(Side.BOTTOM)
         }
 
+        if (prevSide != null && sides.size > 1) {
+            // Don't return back to the previous side
+            sides.remove(prevSide.reversed())
+        }
+
         if (sides.isEmpty()) {
-            onFinished.invoke()
+            onFinished.invoke(null)
             return
         }
 
@@ -67,12 +74,19 @@ internal class ImagePuzzleShuffler(
             fromPosition = emptySquarePosition,
             toPosition = targetPosition,
             duration = 100L,
-            onFinished = onFinished
+            onFinished = { onFinished.invoke(side) }
         )
     }
 
     private enum class Side {
-        LEFT, TOP, RIGHT, BOTTOM
+        LEFT, TOP, RIGHT, BOTTOM;
+
+        fun reversed(): Side = when(this) {
+            LEFT -> RIGHT
+            TOP -> BOTTOM
+            RIGHT -> LEFT
+            BOTTOM -> TOP
+        }
     }
 
     interface SquareSwapper {
