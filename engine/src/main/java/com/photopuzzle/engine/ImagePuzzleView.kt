@@ -20,6 +20,7 @@ class ImagePuzzleView @JvmOverloads constructor(
 ): FrameLayout(context, attrs, defStyleAttr), ImagePuzzleUi {
 
     private val recyclerView = RecyclerView(context).apply {
+        overScrollMode = RecyclerView.OVER_SCROLL_NEVER
         isNestedScrollingEnabled = false
         layoutManager = GridLayoutManagerImpl(context)
     }
