@@ -69,6 +69,9 @@ class GridSelectorView @JvmOverloads constructor(
 
     private fun createGridItems(): List<Grid> {
         val items = ArrayList<Grid>(5)
+        if (BuildConfig.DEBUG) {
+            items.add(SimpleGrid(2, 2))
+        }
         items.add(SimpleGrid(3, 3))
         items.add(SimpleGrid(4, 4))
         items.add(SimpleGrid(5, 5))
