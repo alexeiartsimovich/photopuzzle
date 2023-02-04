@@ -8,20 +8,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityOptionsCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.photopuzzle.app.di.DependencyProvider
 import com.photopuzzle.engine.ImagePuzzleUi
 import com.photopuzzle.engine.ImagePuzzleUtils
 import com.photopuzzle.engine.ImagePuzzleView
 
-class MainFragment : Fragment() {
+class ImagePuzzleFragment : Fragment() {
 
     private val provider by lazy { DependencyProvider(requireContext().applicationContext as Application) }
-    private var pickImageLauncher: ActivityResultLauncher<String>? = null
 
     private val gridSelectorView: GridSelectorView? get() = view?.findViewById(R.id.grid_selector_view)
     private val startButton: View? get() = view?.findViewById(R.id.start_button)
@@ -32,16 +28,7 @@ class MainFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        pickImageLauncher = registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-            ActivityResultCallback { uri: Uri? ->
-                this.selectedUri = uri
-                if (uri != null) {
-                    loadImagePuzzle(uri, gridSelectorView?.selectedGrid!!)
-                }
-            }
-        )
-        pickImage()
+        selectedUri = arguments?.getParcelable<Uri>(ARG_IMAGE_URI)
     }
 
     override fun onCreateView(
@@ -59,11 +46,6 @@ class MainFragment : Fragment() {
             onPuzzleCompletedCallback = ImagePuzzleUi.OnPuzzleCompletedCallback { dispatchPuzzleCompleted() }
             isUiEnabled = false
         }
-    }
-
-    private fun pickImage() {
-        val options = ActivityOptionsCompat.makeBasic()
-        pickImageLauncher?.launch("image/*", options)
     }
 
     private fun loadImagePuzzle(uri: Uri, grid: Grid) {
@@ -86,5 +68,15 @@ class MainFragment : Fragment() {
 
     private fun dispatchPuzzleCompleted() {
         Toast.makeText(requireContext(), "Puzzle completed!", Toast.LENGTH_LONG).show()
+    }
+
+    companion object {
+        private const val ARG_IMAGE_URI = "image_uri"
+
+        fun newInstance(imageUri: Uri): Fragment {
+            return ImagePuzzleFragment().apply {
+                arguments = bundleOf(ARG_IMAGE_URI to imageUri)
+            }
+        }
     }
 }
