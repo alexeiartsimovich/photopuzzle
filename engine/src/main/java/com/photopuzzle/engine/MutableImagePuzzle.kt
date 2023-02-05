@@ -1,6 +1,5 @@
 package com.photopuzzle.engine
 
-import java.util.*
 import kotlin.collections.ArrayList
 
 internal class MutableImagePuzzle(

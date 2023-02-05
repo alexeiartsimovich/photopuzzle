@@ -64,7 +64,7 @@ class ImagePuzzleView @JvmOverloads constructor(
             puzzle = adapter.puzzle,
             swapper = object : ImagePuzzleShuffler.SquareSwapper {
                 override fun onStartSwapping() {
-                    itemAnimator.moveDuration = 80L
+                    // itemAnimator.moveDuration = 80L
                 }
 
                 override fun onSwapSquares(
@@ -73,6 +73,7 @@ class ImagePuzzleView @JvmOverloads constructor(
                     duration: Long,
                     onFinished: () -> Unit
                 ) {
+                    itemAnimator.moveDuration = duration
                     adapter.swapSquares(
                         fromRow = fromPosition.row,
                         fromColumn = fromPosition.column,

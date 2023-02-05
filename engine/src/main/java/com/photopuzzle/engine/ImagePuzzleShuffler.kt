@@ -1,5 +1,7 @@
 package com.photopuzzle.engine
 
+import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 internal class ImagePuzzleShuffler(
@@ -17,22 +19,32 @@ internal class ImagePuzzleShuffler(
         }
         isShuffling = true
         swapper.onStartSwapping()
-        val steps = random.nextInt(10) + 20
-        moveNextRecursively(0, steps, null)
+        val squareCount = puzzle.rows * puzzle.columns
+        val totalStepCount = random.nextInt(squareCount) + squareCount
+        val initialState = SwapState(
+            totalStepCount = totalStepCount,
+            currentStep = 0,
+            prevSide = null
+        )
+        moveNextRecursively(initialState)
     }
 
-    private fun moveNextRecursively(step: Int, stepsLeft: Int, prevSide: Side?) {
-        if (stepsLeft <= 0) {
+    private fun moveNextRecursively(state: SwapState) {
+        if (state.stepsLeft <= 0) {
             isShuffling = false
             swapper.onFinishSwapping()
             return
         }
-        moveStep(prevSide) { nextSide ->
-            moveNextRecursively(step + 1, stepsLeft - 1, nextSide)
+        swapStep(state) { side ->
+            val nextState = state.copy(
+                currentStep = state.currentStep + 1,
+                prevSide = side
+            )
+            moveNextRecursively(nextState)
         }
     }
 
-    private fun moveStep(prevSide: Side?, onFinished: (Side?) -> Unit) {
+    private inline fun swapStep(state: SwapState, crossinline onFinished: (Side?) -> Unit) {
         val emptySquarePosition = ImagePuzzleUtils.findEmptySquarePosition(puzzle)
         if (emptySquarePosition == null) {
             onFinished.invoke(null)
@@ -53,9 +65,9 @@ internal class ImagePuzzleShuffler(
             sides.add(Side.BOTTOM)
         }
 
-        if (prevSide != null && sides.size > 1) {
+        if (state.prevSide != null && sides.size > 1) {
             // Don't return back to the previous side
-            sides.remove(prevSide.reversed())
+            sides.remove(state.prevSide.reversed())
         }
 
         if (sides.isEmpty()) {
@@ -70,10 +82,14 @@ internal class ImagePuzzleShuffler(
             Side.RIGHT -> Position(emptySquarePosition.row, emptySquarePosition.column + 1)
             Side.BOTTOM -> Position(emptySquarePosition.row + 1, emptySquarePosition.column)
         }
+        val durationFactor = (state.stepsLeft.toFloat() / state.totalStepCount).pow(3)
+        val duration = (durationFactor * 120)
+            .toLong()
+            .coerceIn(25L, 120L)
         swapper.onSwapSquares(
             fromPosition = emptySquarePosition,
             toPosition = targetPosition,
-            duration = 100L,
+            duration = duration,
             onFinished = { onFinished.invoke(side) }
         )
     }
@@ -87,6 +103,14 @@ internal class ImagePuzzleShuffler(
             RIGHT -> LEFT
             BOTTOM -> TOP
         }
+    }
+
+    private data class SwapState(
+        val currentStep: Int,
+        val totalStepCount: Int,
+        val prevSide: Side?
+    ) {
+        val stepsLeft: Int get() = totalStepCount - currentStep
     }
 
     interface SquareSwapper {
