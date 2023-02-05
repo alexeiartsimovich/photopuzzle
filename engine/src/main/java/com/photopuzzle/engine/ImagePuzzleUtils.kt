@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Size
 import androidx.annotation.WorkerThread
 import kotlin.collections.ArrayList
@@ -16,7 +15,7 @@ object ImagePuzzleUtils {
     fun createImagePuzzle(context: Context, uri: Uri, rows: Int, columns: Int): ImagePuzzle {
         require(rows > 0)
         require(columns > 0)
-        val rawBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+        val rawBitmap = BitmapUtils.getBitmap(context, uri)
         val srcBitmap = cropBitmap(
             srcBitmap = rawBitmap,
             dimensionRatio = (columns.toFloat() / rows)
