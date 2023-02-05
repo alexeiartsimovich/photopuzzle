@@ -13,7 +13,7 @@ import java.io.File
 
 
 internal object BitmapUtils {
-    private const val UNKNOWN_ORIENTATION = -1
+    private const val UNKNOWN_ORIENTATION: Int = ExifInterface.ORIENTATION_UNDEFINED
 
     @SuppressLint("Range")
     @WorkerThread
