@@ -2,12 +2,14 @@ package com.photopuzzle.app
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatSpinner
 import androidx.core.view.forEach
 import androidx.core.view.setPadding
@@ -33,9 +35,7 @@ class GridSelectorView @JvmOverloads constructor(
             android.R.layout.simple_spinner_item
         ) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                return super.getView(position, convertView, parent).apply {
-                    setPadding(parent.context.dp(8F).toInt())
-                }
+                return super.getView(position, convertView, parent).apply(::configureItemView)
             }
 
             override fun getDropDownView(
@@ -43,9 +43,13 @@ class GridSelectorView @JvmOverloads constructor(
                 convertView: View?,
                 parent: ViewGroup
             ): View {
-                return super.getDropDownView(position, convertView, parent).apply {
-                    setPadding(parent.context.dp(8F).toInt())
-                }
+                return super.getDropDownView(position, convertView, parent).apply(::configureItemView)
+            }
+
+            private fun configureItemView(view: View) {
+                view.setPadding(view.context.dp(8F).toInt())
+                view.findViewById<TextView>(android.R.id.text1)?.setTextSize(
+                    TypedValue.COMPLEX_UNIT_SP, 20f)
             }
         }
         adapter.addAll(createGridItems())

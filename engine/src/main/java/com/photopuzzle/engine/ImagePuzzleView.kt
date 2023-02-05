@@ -31,6 +31,7 @@ class ImagePuzzleView @JvmOverloads constructor(
 
     override var onPuzzleCompletedCallback: ImagePuzzleUi.OnPuzzleCompletedCallback? = null
     override var isUiEnabled: Boolean = false
+        private set
 
     init {
         val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
@@ -96,6 +97,7 @@ class ImagePuzzleView @JvmOverloads constructor(
 
     override fun shuffleImagePuzzle() {
         recyclerView.post {
+            isUiEnabled = false
             adapter?.drawStubSquare = false
             shuffler?.shuffle()
         }
@@ -150,6 +152,7 @@ class ImagePuzzleView @JvmOverloads constructor(
     private fun checkIfPuzzleCompleted(notifyIfComplete: Boolean) {
         val adapter = this.adapter ?: return
         val isComplete = ImagePuzzleUtils.isComplete(adapter.puzzle)
+        isUiEnabled = !isComplete
         adapter.drawStubSquare = isComplete
         if (isComplete && notifyIfComplete) {
             onPuzzleCompletedCallback?.onPuzzleCompleted()
@@ -164,6 +167,10 @@ private class SquareAdapter(
 ) : RecyclerView.Adapter<SquareAdapter.ViewHolder>() {
     private val mutablePuzzle = MutableImagePuzzle(puzzle)
     val puzzle: ImagePuzzle get() = mutablePuzzle
+
+    init {
+        setHasStableIds(true)
+    }
 
     var drawStubSquare: Boolean = false
         set(value) {
@@ -234,6 +241,8 @@ private class SquareAdapter(
     override fun getItemCount(): Int {
         return puzzle.rows * puzzle.columns
     }
+
+    override fun getItemId(position: Int): Long = getSquareForPosition(position).id
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         private val squareImageView: ImageView = itemView.findViewById(R.id.square_image)

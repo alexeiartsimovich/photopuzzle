@@ -3,7 +3,7 @@ package com.photopuzzle.engine
 
 interface ImagePuzzleUi {
     var onPuzzleCompletedCallback: OnPuzzleCompletedCallback?
-    var isUiEnabled: Boolean
+    val isUiEnabled: Boolean
     fun loadImagePuzzle(imagePuzzle: ImagePuzzle)
     fun shuffleImagePuzzle()
 
