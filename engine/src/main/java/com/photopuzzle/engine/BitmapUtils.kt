@@ -18,26 +18,41 @@ internal object BitmapUtils {
     @SuppressLint("Range")
     @WorkerThread
     fun getOrientation(context: Context, uri: Uri, filepath: String?): Int {
+        // Using filepath
         if (!filepath.isNullOrBlank()) {
             val file = File(filepath)
             val exif = ExifInterface(file)
-            return exif.getAttributeInt(
+            val orientation = exif.getAttributeInt(
                 ExifInterface.TAG_ORIENTATION,
                 ExifInterface.ORIENTATION_NORMAL
             )
+            if (orientation != UNKNOWN_ORIENTATION) {
+                return orientation
+            }
         }
-        val cursor: Cursor = context.contentResolver.query(
-            uri, arrayOf(MediaStore.Images.ImageColumns.ORIENTATION), null, null, null)
-            ?: return UNKNOWN_ORIENTATION
-        return cursor.use {
-            runCatching {
+        // Using image input stream
+        kotlin.runCatching {
+            val inputStream = context.contentResolver.openInputStream(uri)!!
+            val exif = ExifInterface(inputStream)
+            exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
+        }.onSuccess { orientation ->
+            if (orientation != UNKNOWN_ORIENTATION) {
+                return orientation
+            }
+        }
+        // Using media store
+        return kotlin.runCatching {
+            val cursor: Cursor = context.contentResolver.query(
+                uri, arrayOf(MediaStore.Images.ImageColumns.ORIENTATION), null, null, null)
+                ?: return UNKNOWN_ORIENTATION
+            cursor.use {
                 if (it.moveToFirst()) {
                     it.getInt(it.getColumnIndex(MediaStore.Images.ImageColumns.ORIENTATION))
                 } else {
                     throw NullPointerException()
                 }
-            }.getOrDefault(UNKNOWN_ORIENTATION)
-        }
+            }
+        }.getOrDefault(UNKNOWN_ORIENTATION)
     }
 
     private fun getRotationInDegrees(orientation: Int): Float {
