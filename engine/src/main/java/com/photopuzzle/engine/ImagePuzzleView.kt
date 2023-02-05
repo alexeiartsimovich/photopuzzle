@@ -12,6 +12,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ItemAnimator
 
 class ImagePuzzleView @JvmOverloads constructor(
     context: Context,
@@ -25,6 +26,7 @@ class ImagePuzzleView @JvmOverloads constructor(
         layoutManager = GridLayoutManagerImpl(context)
     }
     private val adapter: SquareAdapter? get() = recyclerView.adapter as? SquareAdapter
+    private val itemAnimator: ItemAnimator get() = recyclerView.itemAnimator!!
     private var dragHelper: ItemTouchHelper? = null
 
     private var shuffler: ImagePuzzleShuffler? = null
@@ -62,9 +64,7 @@ class ImagePuzzleView @JvmOverloads constructor(
             puzzle = adapter.puzzle,
             swapper = object : ImagePuzzleShuffler.SquareSwapper {
                 override fun onStartSwapping() {
-                    recyclerView.itemAnimator?.apply {
-                        moveDuration = 80L
-                    }
+                    itemAnimator.moveDuration = 80L
                 }
 
                 override fun onSwapSquares(
@@ -79,10 +79,15 @@ class ImagePuzzleView @JvmOverloads constructor(
                         toRow = toPosition.row,
                         toColumn = toPosition.column
                     )
-                    recyclerView.post {
-                        recyclerView.itemAnimator?.isRunning(onFinished)
-                            ?: onFinished.invoke()
-                    }
+                    val delay: Long = itemAnimator.moveDuration
+                    recyclerView.postDelayed(
+                        {
+                            if (itemAnimator.isRunning) {
+                                itemAnimator.isRunning(onFinished)
+                            } else {
+                                onFinished.invoke()
+                            }
+                        }, delay)
                 }
 
                 override fun onFinishSwapping() {
@@ -111,7 +116,7 @@ class ImagePuzzleView @JvmOverloads constructor(
     }
 
     private fun configureAnimations() {
-        recyclerView.itemAnimator?.apply {
+        itemAnimator.apply {
             addDuration = 80L
             moveDuration = 120L
             changeDuration = 120L
@@ -193,8 +198,12 @@ private class SquareAdapter(
             fromPosition = toPosition
             toPosition = tmp
         }
-        notifyItemMoved(fromPosition, toPosition)
-        notifyItemMoved(toPosition - 1, fromPosition)
+        if (fromPosition != toPosition) {
+            notifyItemMoved(fromPosition, toPosition)
+            if (toPosition - 1 != fromPosition) {
+                notifyItemMoved(toPosition - 1, fromPosition)
+            }
+        }
     }
 
     private fun getRowForPosition(position: Int): Int {

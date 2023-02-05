@@ -68,40 +68,39 @@ class ImagePuzzleFragment : Fragment() {
     }
 
     private fun startGame() {
-        beginDelayedTransition {
-            Fade().apply {
-                duration = 150L
-            }
-        }
         gridSelectorView?.apply {
             isEnabled = false
-            visibility = View.INVISIBLE
+            animateVisibility(this, View.INVISIBLE)
         }
         startButton?.apply {
             isEnabled = false
-            visibility = View.INVISIBLE
+            animateVisibility(this, View.INVISIBLE)
         }
         puzzleView?.shuffleImagePuzzle()
     }
 
     private fun dispatchPuzzleCompleted() {
-        Toast.makeText(requireContext(), "Puzzle completed!", Toast.LENGTH_LONG).show()
-        beginDelayedTransition {
-            Fade().apply {
-                duration = 150L
-            }
-        }
-        startNewGameButton?.visibility = View.VISIBLE
-    }
-
-    private inline fun beginDelayedTransition(transition: () -> Transition) {
-        (view as? ViewGroup)?.also { sceneRoot ->
-            TransitionManager.beginDelayedTransition(sceneRoot, transition.invoke())
+        Toast.makeText(requireContext(), R.string.puzzle_completed, Toast.LENGTH_LONG).show()
+        startNewGameButton?.apply {
+            animateVisibility(this, View.VISIBLE)
         }
     }
 
     private fun startNewGame() {
         (activity as? OnNewGameClickedCallback)?.onNewGameClicked()
+    }
+
+    private fun animateVisibility(view: View, visibility: Int) {
+        // Do NOT use the TransitionManager here, it breaks the ImagePuzzleView
+        val alpha = if (visibility == View.VISIBLE) 1f else 0f
+        if (visibility == View.VISIBLE) {
+            view.alpha = 0f
+            view.visibility = View.VISIBLE
+        }
+        view.animate()
+            .alpha(alpha)
+            .setDuration(200L)
+            .start()
     }
 
     companion object {
