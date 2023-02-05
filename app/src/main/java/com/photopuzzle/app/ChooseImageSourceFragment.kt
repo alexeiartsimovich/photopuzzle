@@ -19,16 +19,17 @@ class ChooseImageSourceFragment : Fragment() {
     private var pickImageLauncher: ActivityResultLauncher<String>? = null
     private var takePictureLauncher: ActivityResultLauncher<Uri>? = null
     private var pictureUri: Uri? = null
+    private var pictureFilepath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pickImageLauncher = registerForActivityResult(
             ActivityResultContracts.GetContent()
-        ) { uri: Uri? -> dispatchResultAsync(uri) }
+        ) { uri: Uri? -> dispatchResultAsync(uri, null) }
         takePictureLauncher = registerForActivityResult(
             ActivityResultContracts.TakePicture()
         ) { success: Boolean ->
-            if (success) dispatchResultAsync(pictureUri)
+            if (success) dispatchResultAsync(pictureUri, pictureFilepath)
         }
     }
 
@@ -46,38 +47,37 @@ class ChooseImageSourceFragment : Fragment() {
     }
 
     private fun pickFromGallery() {
+        pictureUri = null
+        pictureFilepath = null
         val options = ActivityOptionsCompat.makeBasic()
         pickImageLauncher?.launch("image/*", options)
     }
 
     private fun takePicture() {
-        val uri = getTmpFileUri()
-        pictureUri = uri
-        takePictureLauncher?.launch(uri)
-    }
-
-    private fun getTmpFileUri(): Uri {
         val context = requireContext().applicationContext
         val cacheDir = context.cacheDir
-        val tmpFile = File.createTempFile("puzzle_image_file", ".png", cacheDir).apply {
+        val file = File(cacheDir, "image_puzzle").apply {
             createNewFile()
             deleteOnExit()
         }
-        return FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", tmpFile)
+        pictureUri = FileProvider.getUriForFile(context,
+            "${BuildConfig.APPLICATION_ID}.provider", file)
+        pictureFilepath = file.absolutePath
+        takePictureLauncher?.launch(pictureUri)
     }
 
-    private fun dispatchResultAsync(uri: Uri?) {
+    private fun dispatchResultAsync(uri: Uri?, filepath: String?) {
         if (uri == null) {
             return
         }
         view?.post {
             if (view != null) {
-                callback?.onImageSourceChosen(uri)
+                callback?.onImageSourceChosen(uri, filepath)
             }
         }
     }
 
     fun interface OnImageSourceChosenCallback {
-        fun onImageSourceChosen(imageUri: Uri)
+        fun onImageSourceChosen(imageUri: Uri, filepath: String?)
     }
 }

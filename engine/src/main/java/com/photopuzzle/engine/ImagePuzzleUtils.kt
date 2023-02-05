@@ -12,10 +12,14 @@ import kotlin.math.absoluteValue
 
 object ImagePuzzleUtils {
     @WorkerThread
-    fun createImagePuzzle(context: Context, uri: Uri, rows: Int, columns: Int): ImagePuzzle {
+    fun createImagePuzzle(
+        context: Context,
+        uri: Uri, filepath: String?,
+        rows: Int, columns: Int
+    ): ImagePuzzle {
         require(rows > 0)
         require(columns > 0)
-        val rawBitmap = BitmapUtils.getBitmap(context, uri)
+        val rawBitmap = BitmapUtils.getBitmap(context, uri, filepath)
         val srcBitmap = cropBitmap(
             srcBitmap = rawBitmap,
             dimensionRatio = (columns.toFloat() / rows)

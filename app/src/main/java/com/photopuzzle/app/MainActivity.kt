@@ -34,8 +34,8 @@ class MainActivity : AppCompatActivity(),
             .commitNow()
     }
 
-    override fun onImageSourceChosen(imageUri: Uri) {
-        val fragment = ImagePuzzleFragment.newInstance(imageUri)
+    override fun onImageSourceChosen(imageUri: Uri, filepath: String?) {
+        val fragment = ImagePuzzleFragment.newInstance(imageUri, filepath)
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, fragment)
             .commitNow()

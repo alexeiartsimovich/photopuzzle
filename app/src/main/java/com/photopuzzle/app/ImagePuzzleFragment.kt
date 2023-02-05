@@ -30,12 +30,14 @@ class ImagePuzzleFragment : Fragment() {
     private val puzzleView: ImagePuzzleView? get() = view?.findViewById(R.id.puzzle_view)
     private val startNewGameButton: View? get() = view?.findViewById(R.id.start_new_game_button)
 
-    private var selectedUri: Uri? = null
+    private var uri: Uri? = null
+    private var filepath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        selectedUri = arguments?.getParcelable<Uri>(ARG_IMAGE_URI)
+        uri = arguments?.getParcelable<Uri>(ARG_IMAGE_URI)
+        filepath = arguments?.getString(ARG_IMAGE_FILEPATH)
     }
 
     override fun onCreateView(
@@ -46,7 +48,7 @@ class ImagePuzzleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         gridSelectorView?.onGridSelectedCallback = GridSelectorView.OnGridSelectedCallback { _, grid ->
-            selectedUri?.also { uri -> loadImagePuzzle(uri, grid) }
+            loadImagePuzzle(grid)
         }
         startButton?.setOnClickListener { startGame() }
         puzzleView?.apply {
@@ -57,10 +59,12 @@ class ImagePuzzleFragment : Fragment() {
         }
     }
 
-    private fun loadImagePuzzle(uri: Uri, grid: Grid) {
+    private fun loadImagePuzzle(grid: Grid) {
         val context = this.context ?: return
+        val uri: Uri = this.uri ?: return
+        val filepath: String? = this.filepath
         provider.backgroundExecutor.execute {
-            val puzzle = ImagePuzzleUtils.createImagePuzzle(context, uri, grid.rows, grid.columns)
+            val puzzle = ImagePuzzleUtils.createImagePuzzle(context, uri, filepath, grid.rows, grid.columns)
             provider.mainExecutor.execute {
                 puzzleView?.loadImagePuzzle(puzzle)
             }
@@ -105,10 +109,14 @@ class ImagePuzzleFragment : Fragment() {
 
     companion object {
         private const val ARG_IMAGE_URI = "image_uri"
+        private const val ARG_IMAGE_FILEPATH = "image_filepath"
 
-        fun newInstance(imageUri: Uri): Fragment {
+        fun newInstance(imageUri: Uri, filepath: String?): Fragment {
             return ImagePuzzleFragment().apply {
-                arguments = bundleOf(ARG_IMAGE_URI to imageUri)
+                arguments = bundleOf(
+                    ARG_IMAGE_URI to imageUri,
+                    ARG_IMAGE_FILEPATH to filepath
+                )
             }
         }
     }

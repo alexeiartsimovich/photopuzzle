@@ -9,6 +9,7 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.annotation.WorkerThread
+import java.io.File
 
 
 internal object BitmapUtils {
@@ -16,7 +17,15 @@ internal object BitmapUtils {
 
     @SuppressLint("Range")
     @WorkerThread
-    fun getOrientation(context: Context, uri: Uri, filepath: String? = null): Int {
+    fun getOrientation(context: Context, uri: Uri, filepath: String?): Int {
+        if (!filepath.isNullOrBlank()) {
+            val file = File(filepath)
+            val exif = ExifInterface(file)
+            return exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+        }
         val cursor: Cursor = context.contentResolver.query(
             uri, arrayOf(MediaStore.Images.ImageColumns.ORIENTATION), null, null, null)
             ?: return UNKNOWN_ORIENTATION
@@ -41,9 +50,9 @@ internal object BitmapUtils {
     }
 
     @WorkerThread
-    fun getBitmap(context: Context, uri: Uri): Bitmap {
+    fun getBitmap(context: Context, uri: Uri, filepath: String?): Bitmap {
         val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-        val orientation = getOrientation(context, uri)
+        val orientation = getOrientation(context, uri, filepath)
         val matrix = Matrix()
         matrix.preRotate(getRotationInDegrees(orientation))
         val adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
