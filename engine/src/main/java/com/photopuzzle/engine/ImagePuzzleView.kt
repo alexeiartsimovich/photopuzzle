@@ -1,8 +1,8 @@
 package com.photopuzzle.engine
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -24,6 +24,7 @@ class ImagePuzzleView @JvmOverloads constructor(
         isNestedScrollingEnabled = false
         layoutManager = GridLayoutManagerImpl(context)
     }
+    private val adapter: SquareAdapter? get() = recyclerView.adapter as? SquareAdapter
     private var dragHelper: ItemTouchHelper? = null
 
     private var shuffler: ImagePuzzleShuffler? = null
@@ -85,14 +86,17 @@ class ImagePuzzleView @JvmOverloads constructor(
 
                 override fun onFinishSwapping() {
                     configureAnimations()
+                    checkIfPuzzleCompleted(notifyIfComplete = false)
                 }
             }
         )
         configureAnimations()
+        checkIfPuzzleCompleted(notifyIfComplete = false)
     }
 
     override fun shuffleImagePuzzle() {
         recyclerView.post {
+            adapter?.drawStubSquare = false
             shuffler?.shuffle()
         }
     }
@@ -120,7 +124,7 @@ class ImagePuzzleView @JvmOverloads constructor(
         val emptySquarePosition = ImagePuzzleUtils.findAdjacentEmptySquarePosition(puzzle, row, column)
             ?: return false
         swapSquaresAndNotify(row, column, emptySquarePosition.row, emptySquarePosition.column)
-        notifyCallbackIfPuzzleCompleted()
+        checkIfPuzzleCompleted(notifyIfComplete = true)
         return true
     }
 
@@ -142,10 +146,12 @@ class ImagePuzzleView @JvmOverloads constructor(
         adapter.swapSquares(fromRow, fromColumn, toRow, toColumn)
     }
 
-    private fun notifyCallbackIfPuzzleCompleted() {
-        val puzzle = (recyclerView.adapter as? SquareAdapter)?.puzzle
-            ?: return
-        if (ImagePuzzleUtils.isComplete(puzzle)) {
+    @SuppressLint("NotifyDataSetChanged")
+    private fun checkIfPuzzleCompleted(notifyIfComplete: Boolean) {
+        val adapter = this.adapter ?: return
+        val isComplete = ImagePuzzleUtils.isComplete(adapter.puzzle)
+        adapter.drawStubSquare = isComplete
+        if (isComplete && notifyIfComplete) {
             onPuzzleCompletedCallback?.onPuzzleCompleted()
         }
     }
@@ -158,6 +164,18 @@ private class SquareAdapter(
 ) : RecyclerView.Adapter<SquareAdapter.ViewHolder>() {
     private val mutablePuzzle = MutableImagePuzzle(puzzle)
     val puzzle: ImagePuzzle get() = mutablePuzzle
+
+    var drawStubSquare: Boolean = false
+        set(value) {
+            field = value
+            for (position in 0 until itemCount) {
+                getSquareForPosition(position).let { square ->
+                    if (square.isStub) {
+                        notifyItemChanged(position)
+                    }
+                }
+            }
+        }
 
     fun swapSquares(fromRow: Int, fromColumn: Int, toRow: Int, toColumn: Int) {
         mutablePuzzle.swapSquares(fromRow, fromColumn, toRow, toColumn)
@@ -180,6 +198,13 @@ private class SquareAdapter(
         return position % puzzle.columns
     }
 
+    private fun getSquareForPosition(position: Int): ImagePuzzle.Square {
+        return puzzle.getSquare(
+            row = getRowForPosition(position),
+            column = getColumnForPosition(position)
+        )
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_square, parent, false)
@@ -195,14 +220,6 @@ private class SquareAdapter(
                     getColumnForPosition(adapterPosition)
                 )
             }
-//            imageView.setOnLongClickListener {
-//                onDragStarted.invoke(
-//                    this,
-//                    getRowForPosition(adapterPosition),
-//                    getColumnForPosition(adapterPosition)
-//                )
-//                true
-//            }
         }
     }
 
@@ -218,12 +235,12 @@ private class SquareAdapter(
         return puzzle.rows * puzzle.columns
     }
 
-    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         private val squareImageView: ImageView = itemView.findViewById(R.id.square_image)
 
         fun bind(item: ImagePuzzle.Square) {
             itemView.setTag(R.id.id_image_square, item)
-            if (item.isEmpty) {
+            if (item.isStub && !drawStubSquare) {
                 squareImageView.setImageDrawable(null)
             } else {
                 squareImageView.setImageDrawable(item.image)

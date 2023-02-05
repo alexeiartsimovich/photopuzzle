@@ -33,7 +33,7 @@ object ImagePuzzleUtils {
                 val isLast = rowIndex == rows - 1 && columnIndex == columns - 1
                 val square = object : ImagePuzzle.Square {
                     override val originalPosition: Position = Position(rowIndex, columnIndex)
-                    override val isEmpty: Boolean = isLast
+                    override val isStub: Boolean = isLast
                     override val image: Drawable = BitmapDrawable(image)
                     override val size: Size = Size(squareWidth, squareHeight)
                 }
@@ -75,7 +75,7 @@ object ImagePuzzleUtils {
     }
 
     fun areSwappable(puzzle: ImagePuzzle, position1: Position, position2: Position): Boolean {
-        if (!puzzle.getSquare(position1).isEmpty && !puzzle.getSquare(position2).isEmpty) {
+        if (!puzzle.getSquare(position1).isStub && !puzzle.getSquare(position2).isStub) {
             return false
         }
         if ((position1.row - position2.row).absoluteValue == 1
@@ -92,7 +92,7 @@ object ImagePuzzleUtils {
     fun findEmptySquarePosition(puzzle: ImagePuzzle): Position? {
         for (i in 0 until puzzle.rows) {
             for (j in 0 until puzzle.columns) {
-                if (puzzle.getSquare(i, j).isEmpty) {
+                if (puzzle.getSquare(i, j).isStub) {
                     return Position(i, j)
                 }
             }
@@ -109,7 +109,7 @@ object ImagePuzzleUtils {
                 val otherRow = row + i
                 val otherColumn = column + j
                 getSquareOrNull(puzzle, otherRow, otherColumn)?.also { other ->
-                    if (other.isEmpty) {
+                    if (other.isStub) {
                         return Position(otherRow, otherColumn)
                     }
                 }
