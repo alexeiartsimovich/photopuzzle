@@ -1,4 +1,4 @@
-package com.photopuzzle.app
+package com.photopuzzle.app.ui.imagesource
 
 import android.net.Uri
 import android.os.Bundle
@@ -10,6 +10,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import com.photopuzzle.app.BuildConfig
+import com.photopuzzle.app.R
 import java.io.File
 
 class ChooseImageSourceFragment : Fragment() {

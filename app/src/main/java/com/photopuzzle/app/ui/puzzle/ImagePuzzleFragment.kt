@@ -1,4 +1,4 @@
-package com.photopuzzle.app
+package com.photopuzzle.app.ui.puzzle
 
 import android.app.Application
 import android.net.Uri
@@ -9,9 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.transition.Fade
-import androidx.transition.Transition
-import androidx.transition.TransitionManager
+import com.photopuzzle.app.R
 import com.photopuzzle.app.di.DependencyProvider
 import com.photopuzzle.engine.ImagePuzzleUi
 import com.photopuzzle.engine.ImagePuzzleUtils

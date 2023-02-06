@@ -14,7 +14,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"/>
 
-    <com.photopuzzle.app.GridSelectorView
+    <com.photopuzzle.app.ui.puzzle.GridSelectorView
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/start_button"
         app:layout_constraintEnd_toStartOf="@id/start_button"
