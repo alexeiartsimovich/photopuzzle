@@ -1,4 +1,4 @@
-package com.photopuzzle.app.ui.puzzle
+package com.slidingpuzzle.app.ui.puzzle
 
 import android.content.Context
 import android.util.AttributeSet
@@ -13,8 +13,8 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatSpinner
 import androidx.core.view.forEach
 import androidx.core.view.setPadding
-import com.photopuzzle.app.BuildConfig
-import com.photopuzzle.engine.dp
+import com.slidingpuzzle.app.BuildConfig
+import com.slidingpuzzle.engine.dp
 
 class GridSelectorView @JvmOverloads constructor(
     context: Context,

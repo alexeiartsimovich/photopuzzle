@@ -1,4 +1,4 @@
-package com.photopuzzle.engine
+package com.slidingpuzzle.engine
 
 import android.graphics.drawable.Drawable
 import android.util.Size

@@ -1,7 +1,6 @@
-package com.photopuzzle.engine
+package com.slidingpuzzle.engine
 
 import kotlin.math.pow
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 internal class ImagePuzzleShuffler(

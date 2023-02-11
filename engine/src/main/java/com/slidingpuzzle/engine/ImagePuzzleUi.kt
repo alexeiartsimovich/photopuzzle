@@ -1,4 +1,4 @@
-package com.photopuzzle.engine
+package com.slidingpuzzle.engine
 
 
 interface ImagePuzzleUi {

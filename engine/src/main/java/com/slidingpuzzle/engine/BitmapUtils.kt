@@ -1,4 +1,4 @@
-package com.photopuzzle.engine
+package com.slidingpuzzle.engine
 
 import android.annotation.SuppressLint
 import android.content.Context

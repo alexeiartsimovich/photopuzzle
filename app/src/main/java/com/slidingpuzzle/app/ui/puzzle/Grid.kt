@@ -1,4 +1,4 @@
-package com.photopuzzle.app.ui.puzzle
+package com.slidingpuzzle.app.ui.puzzle
 
 interface Grid {
     val rows: Int

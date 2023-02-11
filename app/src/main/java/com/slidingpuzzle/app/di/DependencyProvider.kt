@@ -1,4 +1,4 @@
-package com.photopuzzle.app.di
+package com.slidingpuzzle.app.di
 
 import android.app.Application
 import android.os.Handler

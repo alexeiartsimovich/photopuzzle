@@ -1,12 +1,12 @@
-package com.photopuzzle.app.ui
+package com.slidingpuzzle.app.ui
 
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import com.photopuzzle.app.R
-import com.photopuzzle.app.ui.imagesource.ChooseImageSourceFragment
-import com.photopuzzle.app.ui.puzzle.ImagePuzzleFragment
+import com.slidingpuzzle.app.R
+import com.slidingpuzzle.app.ui.imagesource.ChooseImageSourceFragment
+import com.slidingpuzzle.app.ui.puzzle.ImagePuzzleFragment
 
 class MainActivity : AppCompatActivity(),
     ChooseImageSourceFragment.OnImageSourceChosenCallback,
