@@ -49,6 +49,7 @@ class ImagePuzzleView @JvmOverloads constructor(
     }
 
     override fun loadImagePuzzle(imagePuzzle: ImagePuzzle) {
+        val isNumbered = adapter?.isNumbered ?: false
         val adapter = SquareAdapter(
             puzzle = imagePuzzle,
             onClicked = { row, column ->
@@ -58,6 +59,7 @@ class ImagePuzzleView @JvmOverloads constructor(
                 dragSquare(holder, row, column)
             }
         )
+        adapter.isNumbered = isNumbered
 //        recyclerView.swapAdapter(adapter, false)
         (recyclerView.layoutManager as GridLayoutManagerImpl).apply {
             spanCount = imagePuzzle.columns
