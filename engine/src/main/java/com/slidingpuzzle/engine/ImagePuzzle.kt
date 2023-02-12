@@ -14,6 +14,7 @@ interface ImagePuzzle {
     interface Square {
         val id: Long
         val originalPosition: Position
+        val originalIndex: Int
         val isStub: Boolean
         val image: Drawable
         val size: Size

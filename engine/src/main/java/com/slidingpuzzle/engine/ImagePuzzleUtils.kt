@@ -35,8 +35,9 @@ object ImagePuzzleUtils {
                 val image = Bitmap.createBitmap(srcBitmap, x, y, squareWidth, squareHeight)
                 val isLast = rowIndex == rows - 1 && columnIndex == columns - 1
                 val square = object : ImagePuzzle.Square {
-                    override val id: Long = (rowIndex + columns + columnIndex).toLong()
+                    override val id: Long get() = originalIndex.toLong()
                     override val originalPosition: Position = Position(rowIndex, columnIndex)
+                    override val originalIndex: Int = (rowIndex * columns + columnIndex)
                     override val isStub: Boolean = isLast
                     override val image: Drawable = BitmapDrawable(image)
                     override val size: Size = Size(squareWidth, squareHeight)

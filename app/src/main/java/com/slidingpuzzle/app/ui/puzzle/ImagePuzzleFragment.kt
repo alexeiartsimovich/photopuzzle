@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -27,6 +28,7 @@ class ImagePuzzleFragment : Fragment() {
     private val startButton: View? get() = view?.findViewById(R.id.start_button)
     private val puzzleView: ImagePuzzleView? get() = view?.findViewById(R.id.puzzle_view)
     private val startNewGameButton: View? get() = view?.findViewById(R.id.start_new_game_button)
+    private val enableNumbersCheckbox: CheckBox? get() = view?.findViewById(R.id.enable_numbers)
 
     private var uri: Uri? = null
     private var filepath: String? = null
@@ -54,6 +56,9 @@ class ImagePuzzleFragment : Fragment() {
         }
         startNewGameButton?.apply {
             setOnClickListener { startNewGame() }
+        }
+        enableNumbersCheckbox?.apply {
+            setOnCheckedChangeListener { _, isChecked -> setNumbersEnabled(isChecked) }
         }
     }
 
@@ -90,6 +95,10 @@ class ImagePuzzleFragment : Fragment() {
 
     private fun startNewGame() {
         (activity as? OnNewGameClickedCallback)?.onNewGameClicked()
+    }
+
+    private fun setNumbersEnabled(enabled: Boolean) {
+        puzzleView?.isNumbered = enabled
     }
 
     private fun animateVisibility(view: View, visibility: Int) {

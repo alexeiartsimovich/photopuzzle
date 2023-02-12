@@ -4,6 +4,7 @@
     <string name="start_game">Start game</string>
     <string name="start_new_game">Start new game</string>
     <string name="puzzle_completed">Puzzle completed!</string>
+    <string name="enable_numbers">Enable numbers</string>
 
     <string name="choose_image_puzzle_source">Choose a source for the sliding puzzle</string>
     <string name="pick_from_gallery">Pick from gallery</string>

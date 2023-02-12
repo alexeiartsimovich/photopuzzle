@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -14,4 +15,22 @@
         android:id="@+id/square_image"
         android:layout_width="0dp"
         android:layout_height="0dp"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/number_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:textSize="16dp"
+        android:gravity="center"
+        android:textColor="?colorOnSecondary"
+        app:autoSizeMaxTextSize="16dp"
+        app:autoSizeMinTextSize="13dp"
+        android:textAppearance="?textAppearanceCaption"
+        android:includeFontPadding="false"
+        android:background="@drawable/bg_square_number"
+        tools:ignore="SpUsage"
+        tools:text="15"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

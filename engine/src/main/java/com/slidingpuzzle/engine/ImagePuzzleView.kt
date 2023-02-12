@@ -6,7 +6,9 @@ import android.util.AttributeSet
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
@@ -34,6 +36,11 @@ class ImagePuzzleView @JvmOverloads constructor(
     override var onPuzzleCompletedCallback: ImagePuzzleUi.OnPuzzleCompletedCallback? = null
     override var isUiEnabled: Boolean = false
         private set
+    override var isNumbered: Boolean
+        get() = adapter?.isNumbered ?: false
+        set(value) {
+            adapter?.isNumbered = value
+        }
 
     init {
         val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
@@ -190,6 +197,17 @@ private class SquareAdapter(
             }
         }
 
+    var isNumbered: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+//                for (i in 0 until itemCount) {
+//                    notifyItemChanged(i, PAYLOAD_NUMBERED)
+//                }
+                notifyDataSetChanged()
+            }
+        }
+
     fun swapSquares(fromRow: Int, fromColumn: Int, toRow: Int, toColumn: Int) {
         mutablePuzzle.swapSquares(fromRow, fromColumn, toRow, toColumn)
         var fromPosition = fromRow * puzzle.columns + fromColumn
@@ -256,15 +274,26 @@ private class SquareAdapter(
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         private val squareImageView: ImageView = itemView.findViewById(R.id.square_image)
+        private val numberTextView: TextView = itemView.findViewById(R.id.number_text_view)
 
+        @SuppressLint("SetTextI18n")
         fun bind(item: ImagePuzzle.Square) {
             itemView.setTag(R.id.id_image_square, item)
-            if (item.isStub && !drawStubSquare) {
-                squareImageView.setImageDrawable(null)
-            } else {
+            val shouldDraw = !item.isStub || drawStubSquare
+            if (shouldDraw) {
                 squareImageView.setImageDrawable(item.image)
+            } else {
+                squareImageView.setImageDrawable(null)
+            }
+            numberTextView.apply {
+                isVisible = isNumbered && shouldDraw
+                text = (item.originalIndex + 1).toString()
             }
         }
+    }
+
+    companion object {
+        private val PAYLOAD_NUMBERED = Any()
     }
 }
 
